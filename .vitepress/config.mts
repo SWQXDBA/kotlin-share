@@ -27,7 +27,7 @@ export default defineConfig({
       {
         text: '第二章：Kotlin核心特性与优势',
         items: [
-          { text: '语法简洁性', link: '/guide/features/conciseness' },
+          { text: '现代语法特性', link: '/guide/features/conciseness' },
           { text: '空安全机制', link: '/guide/features/null-safety' },
           { text: '函数式编程', link: '/guide/features/functional-programming' },
           { text: '协程支持', link: '/guide/features/coroutines' },

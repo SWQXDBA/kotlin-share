@@ -10,10 +10,17 @@ hero:
     - theme: brand
       text: 开始阅读
       link: /guide/introduction
+    - theme: brand
+      text: Kotlin官网
+      link: https://kotlinlang.org/
+    - theme: brand
+      text: Kotlin Book 中文网
+      link: https://book.kotlincn.net/
     - theme: alt
-      text: View on GitHub
+      text: 在Github上查看本文档
       link: https://github.com/SWQXDBA/kotlin-share
 
+  
 
 features:
   - title: 空安全
@@ -69,7 +76,7 @@ public String grandFatherName(People people){
 }
 ```
 
-```java [孤独一注]
+```java [孤注一掷]
 public String grandFatherName(People people) {
 	try {
 		if (people.getFather().getFather().getName() != null) {

@@ -54,7 +54,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/kt-vitepress' }
+      { icon: 'github', link: 'https://github.com/SWQXDBA/kotlin-share' }
     ]
   }
 })

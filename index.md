@@ -10,6 +10,10 @@ hero:
     - theme: brand
       text: 开始阅读
       link: /guide/introduction
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/SWQXDBA/kotlin-share
+
 
 features:
   - title: 空安全

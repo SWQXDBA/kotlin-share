@@ -2,6 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  base:'/kotlin-share/',
   outDir:'docs',
   title: 'Kotlin后端开发指南',
   description: '写给Javaer的Kotlin指南',

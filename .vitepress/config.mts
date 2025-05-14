@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: 'Kotlin后端开发指南',
-  description: '使用Kotlin进行后端开发的技术分享文档',
+  description: '写给Javaer的Kotlin指南',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [

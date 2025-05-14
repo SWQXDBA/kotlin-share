@@ -24,7 +24,7 @@ val filtered = numbers.filter { it > 1 }    // 自动推断过滤条件中的类
 
 ## 智能类型转换（Smart Cast）
 
-Kotlin的智能类型转换自动处理类型检查后的转换操作：
+::: code-group
 
 ```kotlin
 // 基本智能类型转换
@@ -57,6 +57,34 @@ fun evaluate(expr: Any) = when(expr) {
 }
 ```
 
+```java
+// 基本类型检查与转换（Java 16之前）
+public String describe(Object obj) {
+    if (obj instanceof String) {
+        String str = (String) obj; // 需要显式类型转换
+        return "字符串，长度为" + str.length();
+    } else if (obj instanceof Integer) {
+        Integer i = (Integer) obj; // 需要显式类型转换
+        return "整数，平方为" + (i * i);
+    }
+    return "未知类型";
+}
+// 基本类型检查与转换（Java 16之后）
+public String describe(Object obj) {
+    if (obj instanceof String str) {
+        return "字符串，长度为" + str.length();
+    } else if (obj instanceof Integer i) {
+ 
+        return "整数，平方为" + (i * i);
+    }
+    return "未知类型";
+}
+
+
+```
+
+:::
+
 ## 数据类
 
 Kotlin的数据类（data class）是一种专门用于保存数据的类，它会自动生成常用函数，从而减少样板代码：
@@ -80,76 +108,56 @@ val updatedUser = user1.copy(email = "alice.new@example.com")
 val (id, name, email) = user1
 ```
 
-### Kotlin数据类与Java Records比较
+### 与Java Records 的异同点
 
-Java 14引入了Record特性，与Kotlin的数据类有相似之处，但存在一些重要区别：
-
-#### 基本语法对比
+::: code-group
 
 ```kotlin
 // Kotlin数据类
 data class User(val id: Long, val name: String, val email: String)
-
-// Java Record (Java 14+)
-// public record User(long id, String name, String email) { }
 ```
 
-#### 主要相似点
+```java
+// Java Record (Java 14+)
+public record User(long id, String name, String email) { }
+```
+:::
 
-1. **减少样板代码**：两者都自动生成equals()、hashCode()和toString()方法
-2. **不可变性支持**：两者都支持创建不可变对象（Kotlin通过val，Java Record总是不可变的）
-3. **参数式构造函数**：两者都使用主构造函数定义字段
+相同点
+* 都会生成 equals hashcode toString
 
-#### 主要区别
+不同点
+* kotlin data class 会生成标准getter setter方法，而java record 只有字段。
+* data class 拥有 copy函数 可以在修改部分属性的情况下拷贝到另一个对象，这很适合于不可变对象的修改拷贝操作。
 
-1. **可变性**：
-   - Java Records始终是不可变的，所有字段都是final的
-   - Kotlin数据类可以使用var声明可变属性：`data class User(var name: String)`
-
-2. **额外字段**：
-   - Java Records不允许定义额外的实例字段（只能有静态字段）
-   - Kotlin数据类可以添加不属于主构造函数的属性：
-   ```kotlin
-   data class User(val id: Long, val name: String) {
-       val displayName = "$id: $name"
-       var lastLoginTime: Long = 0
-   }
-   ```
-
-3. **继承**：
-   - Java Records不能继承其他类（隐式继承java.lang.Record）
-   - Kotlin数据类可以继承其他开放类：
-   ```kotlin
-   open class Entity(val id: Long)
-   data class User(val userId: Long, val name: String): Entity(userId)
-   ```
-
-4. **特有功能**：
-   - Kotlin提供copy()方法，用于创建属性部分修改的对象副本
-   - Kotlin支持解构声明（component1()、component2()等函数）
-   - Java Records可以通过反射轻松识别（isRecord()方法）
-
-5. **getter方法**：
-   - Kotlin遵循JavaBean惯例，使用getXxx()方法名
-   - Java Records使用与属性名相同的方法名（无get前缀）
-
-6. **历史**：
-   - Kotlin的数据类在2011年就已推出
-   - Java Records在2020年作为预览特性引入，2021年在Java 16中正式发布
-
-7. **toString()格式**：
-   - Kotlin: `User(id=1, name=Alice)`（使用圆括号）
-   - Java: `User[id=1, name=Alice]`（使用方括号）
-
-#### 何时选择哪一个
-
-- 对于Java开发：如果使用Java 14+，可以使用Records来简化数据持有类
-- 对于Kotlin开发：数据类提供更多灵活性和功能，特别是当你需要可变属性、额外字段或继承时
-- 对于混合项目：两者可以相互调用，但要注意语义差异
+因此 kotlin的 `data class `实际上更类似于java的普通对象加上 lombok `@Data` 注解的效果
 
 ## 属性访问
 
 Kotlin 的属性直接集成了访问器（getter和setter），并且可以直接使用赋值操作符，而 Java 即使使用 Lombok 也需要通过方法调用：
+
+::: code-group
+
+```kotlin
+// Kotlin 实现
+class Person {
+    var name: String = "" // 可读可写属性，自动生成getter和setter
+    val age: Int = 0 // 只读属性，只有getter
+    
+    var isAdult: Boolean = false
+        get() = age >= 18 // 自定义getter
+        private set // 私有setter，只能在类内部修改
+    
+    val formattedName: String
+        get() = name.uppercase() // 自定义getter的计算属性
+}
+
+// 使用示例
+val person = Person()
+person.name = "张三"  // 直接使用赋值操作符
+val name = person.name  // 直接访问属性
+val isAdult = person.isAdult  // 调用自定义 getter
+```
 
 ```java
 // Java 实现（使用 Lombok）
@@ -181,35 +189,17 @@ String name = person.getName();  // 必须使用方法调用
 boolean isAdult = person.isAdult();  // 调用自定义 getter
 ```
 
-```kotlin
-// Kotlin 实现
-class Person {
-    var name: String = "" // 可读可写属性，自动生成getter和setter
-    val age: Int = 0 // 只读属性，只有getter
-    
-    var isAdult: Boolean = false
-        get() = age >= 18 // 自定义getter
-        private set // 私有setter，只能在类内部修改
-    
-    val formattedName: String
-        get() = name.uppercase() // 自定义getter的计算属性
-}
+:::
 
-// 使用示例
-val person = Person()
-person.name = "张三"  // 直接使用赋值操作符
-val name = person.name  // 直接访问属性
-val isAdult = person.isAdult  // 调用自定义 getter
+Kotlin 的属性访问可以直接通过 `=` 操作符进行属性赋值，会在编译的时候被翻译成 getter setter调用
+::: code-group
+```kotlin 
+a.name = a2.name
 ```
-
-Kotlin 的属性访问语法不仅更简洁，而且：
-- 可以直接使用赋值操作符（=）而不是方法调用
-- 自动生成标准的 getter 和 setter
-- 支持自定义访问器
-- 可以控制访问器的可见性
-- 支持计算属性
-- 代码更易读和维护
-
+```java 
+a.setName(a2.getName);
+```
+:::
 ## 函数简化
 
 Kotlin的函数定义和使用更加简洁：
@@ -320,7 +310,18 @@ for ((key, value) in map) {
 
 ## 对象equals比较
 
-### Java中的对象equals比较
+::: code-group
+
+```kotlin
+// Kotlin中的对象比较
+val str1 = "Hello"
+val str2 = "Hello"
+val str3: String? = null
+
+// 直接使用==操作符，自动处理null
+val isEqual1 = str1 == str2  // true
+val isEqual2 = str1 == str3  // false，自动处理null
+```
 
 ```java
 // Java中的对象比较
@@ -335,32 +336,11 @@ boolean isEqual1 = Objects.equals(str1, str2);  // true
 boolean isEqual2 = Objects.equals(str1, str3);  // false，避免空指针异常
 ```
 
-### Kotlin中的对象equals比较
-
-```kotlin
-// Kotlin中的对象比较
-val str1 = "Hello"
-val str2 = "Hello"
-val str3: String? = null
-
-// 直接使用==操作符，自动处理null
-val isEqual1 = str1 == str2  // true
-val isEqual2 = str1 == str3  // false，自动处理null
-```
-
+:::
 
 ## Comparable对象的比较
 
-### Java中的Comparable比较
-
-```java
-// 需要使用compareTo方法
-if (student1.compareTo(student2) < 0) {
-  //...
-}
-```
-
-### Kotlin中的Comparable比较
+::: code-group
 
 ```kotlin
 // 直接使用操作符
@@ -369,26 +349,18 @@ if (student1 < student2) {
 }
 ```
 
+```java
+// 需要使用compareTo方法
+if (student1.compareTo(student2) < 0) {
+  //...
+}
+```
+
+:::
 
 ## 空字符串处理
 
-### Java中的字符串判空
-
-```java
-String input = null;
-
-// 判空处理
-if (StringUtils.isBlank(input)) {
-    throw new IllegalArgumentException("输入不能为空");
-} else {
-    System.out.println(input.length());  
-}
-
-//默认空值
-input = input == null ? "" : input;  
-```
-
-### Kotlin中的字符串判空
+::: code-group
 
 ```kotlin
 var input: String? = null
@@ -406,25 +378,45 @@ if (input.isNullOrBlank()) {
 input = input ?: ""
 ```
 
+```java
+String input = null;
+
+// 判空处理
+if (StringUtils.isBlank(input)) {
+    throw new IllegalArgumentException("输入不能为空");
+} else {
+    System.out.println(input.length());  
+}
+
+//默认空值
+input = input == null ? "" : input;  
+```
+
+:::
 
 Kotlin通过操作符重载和简洁的语法，使得对象比较代码更加直观和易读。Java虽然也能实现相同的功能，但需要更多的样板代码和显式的方法调用。 
 
 ## 字符串模板
 
-Kotlin的字符串模板比传统字符串拼接更加简洁和可读：
+::: code-group
 
 ```kotlin
-// Java
-String message = "User " + user.getName() + " is " + user.getAge() + " years old";
-
 // Kotlin
 val message = "User ${user.name} is ${user.age} years old"
 ```
 
+```java
+// Java
+String message = "User " + user.getName() + " is " + user.getAge() + " years old";
+```
+
+:::
 
 ## reified 关键字与 JSON 序列化
 
 Kotlin 的 reified 关键字允许在运行时保留泛型类型信息，这在 JSON 序列化等场景下特别有用。下面展示如何使用 reified 关键字实现类型安全的 JSON 序列化和反序列化：
+
+::: code-group
 
 ```kotlin
 import com.alibaba.fastjson.JSON
@@ -459,21 +451,6 @@ fun main() {
     println(personList) // 输出: [Person(name=张三, age=25), Person(name=李四, age=30)]
 }
 ```
-
-通过使用 reified 关键字，我们可以：
-1. 在运行时保留泛型类型信息
-2. 简化 JSON 序列化和反序列化的代码
-3. 避免显式指定 TypeReference
-4. 提供更好的类型安全性
-
-这种方式比传统的 Java 实现更加简洁和类型安全，因为：
-- 不需要显式创建 TypeReference 对象
-- 编译器可以检查类型是否匹配
-- 代码更加简洁易读
-
-### Java 中的实现对比
-
-在 Java 中，由于没有 reified 关键字，我们需要显式指定 TypeReference，代码会显得更加冗长：
 
 ```java
 import com.alibaba.fastjson.JSON;
@@ -511,6 +488,8 @@ public class Main {
 }
 ```
 
+:::
+
 通过对比可以看出，Java 实现需要：
 1. 显式创建 TypeReference 对象
 2. 在反序列化时额外传入类型参数
@@ -525,7 +504,43 @@ Kotlin 的接口委托（Interface Delegation）是一种强大的设计模式�
 
 ### 组合替代继承的示例
 
-让我们看一个实际的例子，假设我们需要为数据源添加日志功能。在 Java 中，这通常需要实现大量的方法：
+让我们看一个实际的例子，假设我们需要为数据源添加日志功能：
+
+::: code-group
+
+```kotlin
+// Kotlin 实现
+class LoggingDataSource(private val delegate: DataSource) : DataSource by delegate {
+    private val logger = LoggerFactory.getLogger(LoggingDataSource::class.java)
+    
+    // 只需要重写需要添加日志的方法
+    override fun getConnection(): Connection {
+        logger.info("获取数据库连接")
+        return try {
+            val conn = delegate.getConnection()
+            logger.info("成功获取数据库连接: $conn")
+            conn
+        } catch (e: SQLException) {
+            logger.error("获取数据库连接失败", e)
+            throw e
+        }
+    }
+    
+    override fun getConnection(username: String, password: String): Connection {
+        logger.info("获取带认证的数据库连接")
+        return try {
+            val conn = delegate.getConnection(username, password)
+            logger.info("成功获取带认证的数据库连接: $conn")
+            conn
+        } catch (e: SQLException) {
+            logger.error("获取带认证的数据库连接失败", e)
+            throw e
+        }
+    }
+    
+    // 其他方法自动委托给 delegate，无需手动实现
+}
+```
 
 ```java
 // Java 实现
@@ -578,44 +593,7 @@ public class LoggingDataSource implements DataSource {
 }
 ```
 
-而在 Kotlin 中，使用接口委托可以大大简化这个实现：
-
-```kotlin
-// Kotlin 实现
-class LoggingDataSource(private val delegate: DataSource) : DataSource by delegate {
-    private val logger = LoggerFactory.getLogger(LoggingDataSource::class.java)
-    
-    // 只需要重写需要添加日志的方法
-    override fun getConnection(): Connection {
-        logger.info("获取数据库连接")
-        return try {
-            val conn = delegate.getConnection()
-            logger.info("成功获取数据库连接: $conn")
-            conn
-        } catch (e: SQLException) {
-            logger.error("获取数据库连接失败", e)
-            throw e
-        }
-    }
-    
-    override fun getConnection(username: String, password: String): Connection {
-        logger.info("获取带认证的数据库连接")
-        return try {
-            val conn = delegate.getConnection(username, password)
-            logger.info("成功获取带认证的数据库连接: $conn")
-            conn
-        } catch (e: SQLException) {
-            logger.error("获取带认证的数据库连接失败", e)
-            throw e
-        }
-    }
-    
-    // 其他方法自动委托给 delegate，无需手动实现
-}
-```
-
-
-
+:::
 
 接口委托是 Kotlin 中实现组合优于继承的优雅解决方案。通过使用接口委托，我们可以：
 - 轻松扩展现有功能
